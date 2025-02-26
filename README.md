@@ -1,6 +1,6 @@
-# Farkle Dice Minigame (from Kingdom Come Deliverance 2)
+# Farkle Dice Minigame (as depicted in Kingdom Come Deliverance 2)
 
-## This CLI game made in C is a recreation of the dice minigame from KCD2. I'm working on this for fun to learn C.
+This CLI game made in C is a recreation of the dice minigame from KCD2. I'm working on this for fun to learn C. Created in Visual Studio 2022 with the included build tools.
 
 This video may be more helpful for learning the rules of the dice game https://youtu.be/wztXFvbiu20, but I will attempt to explain it below.
 
@@ -12,6 +12,8 @@ This video may be more helpful for learning the rules of the dice game https://y
 - From here, you can stop your turn and bank your points, then it will be the other player's turn to roll...
   
 - OR you can reroll the dice you haven't selected in the hopes of getting a better roll and thus scoring more points.
+
+- This is where the fun of the game comes from, balancing risk vs reward to maximise points per turn, with the risk of throwing away all the points you earned that turn if you get too greedy.
   
 - However, if none of the dice score in a roll, the player has 'farkled' and all points for that round/turn are lost.
 
