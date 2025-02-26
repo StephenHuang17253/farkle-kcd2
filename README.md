@@ -1,6 +1,8 @@
 # Farkle Dice Minigame (as depicted in Kingdom Come Deliverance 2)
 
-This CLI game made in C is a recreation of the dice minigame from KCD2. I'm working on this for fun to learn C. Created in Visual Studio 2022 with the included build tools.
+This CLI game made in C is a recreation of the dice minigame from KCD2. I'm working on this for fun to learn C. 
+
+Created in Visual Studio 2022 with the included build tools.
 
 This video may be more helpful for learning the rules of the dice game https://youtu.be/wztXFvbiu20, but I will attempt to explain it below.
 
@@ -33,7 +35,11 @@ This video may be more helpful for learning the rules of the dice game https://y
 | <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Dice-4.svg" alt="Three 4s" width="32"/> <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Dice-4.svg" alt="Three 4s" width="32"/> <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Dice-4.svg" alt="Three 4s" width="32"/>  | 400 |
 | <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Dice-5.svg/2048px-Dice-5.svg.png" alt="Three 5s" width="32"/><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Dice-5.svg/2048px-Dice-5.svg.png" alt="Three 5s" width="32"/><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Dice-5.svg/2048px-Dice-5.svg.png" alt="Three 5s" width="32"/>  | 500 |
 | <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Dice-6.svg/600px-Dice-6.svg.png" alt="Three 6s" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Dice-6.svg/600px-Dice-6.svg.png" alt="Three 6s" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Dice-6.svg/600px-Dice-6.svg.png" alt="Three 6s" width="32"/>| 600 |
-| Four or more of a kind (e.g.  five 2s) | double the points of three of a kind, so four 1s is worth 2000 points |
+| Each additional die after 3 of a kind, doubles the value | e.g. Four 5s = 1000, Five 5s = 2000, etc. |
 | <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Dice-1.svg/2048px-Dice-1.svg.png" alt="1" width="32"/> <img src="https://upload.wikimedia.org/wikipedia/commons/3/34/Dice-2.svg" alt="2" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Dice-3.svg/600px-Dice-3.svg.png" alt="3" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Dice-4.svg" alt="4" width="32"/> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Dice-5.svg/2048px-Dice-5.svg.png" alt="5" width="32"/> | 500 |
 | <img src="https://upload.wikimedia.org/wikipedia/commons/3/34/Dice-2.svg" alt="2" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Dice-3.svg/600px-Dice-3.svg.png" alt="3" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Dice-4.svg" alt="4" width="32"/> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Dice-5.svg/2048px-Dice-5.svg.png" alt="5" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Dice-6.svg/600px-Dice-6.svg.png" alt="6" width="32"/> | 750 |
 | <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Dice-1.svg/2048px-Dice-1.svg.png" alt="1" width="32"/> <img src="https://upload.wikimedia.org/wikipedia/commons/3/34/Dice-2.svg" alt="2" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Dice-3.svg/600px-Dice-3.svg.png" alt="3" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/1/16/Dice-4.svg" alt="4" width="32"/> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Dice-5.svg/2048px-Dice-5.svg.png" alt="5" width="32"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Dice-6.svg/600px-Dice-6.svg.png" alt="6" width="32"/> | 1500 |
+
+Screenshot from Kingdom Come Deliverance 2, ignore the devil's head, custom dice are not implemented in this.
+
+![image](https://github.com/user-attachments/assets/90b43ded-942f-47b2-a3ad-a8b7b7524256)
