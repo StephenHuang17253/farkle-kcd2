@@ -56,9 +56,38 @@ int check_farkle(int dice[], int num_dice) {
 void preview_score(int counts[], int total_score, int turn_score) {
     int preview_score = 0;
 
-    preview_score += counts[0] * 100; // 1's score 100 each
-    preview_score += counts[4] * 50;  // 5's score 50 each
-    // TODO: Rest of ruleset
+    if (counts[0] < 3) {
+        preview_score += counts[0] * 100; // 1's score 100 each
+
+    }
+
+    if (counts[4] < 3) {
+        preview_score += counts[4] * 50;  // 5's score 50 each
+    }
+
+
+    for (int i = 0; i < 6; i++) {
+
+        int three_of_a_kind = (i == 0) ? 1000 : (i + 1) * 100;
+
+        printf("%d", counts[i]);
+
+        if (counts[i] == 3) {
+            preview_score += three_of_a_kind;
+        }
+        else if (counts[i] == 4) {
+            preview_score += three_of_a_kind * 2;
+        }
+        else if (counts[i] == 5) {
+            preview_score += three_of_a_kind * 4;
+        }
+        else if (counts[i] == 6) {
+            preview_score += three_of_a_kind * 8;
+        }
+
+        
+        
+    }
 
     printf("\n-----------\n");
     printf("Game Score: %d\n", total_score);
@@ -66,7 +95,7 @@ void preview_score(int counts[], int total_score, int turn_score) {
     printf("Your selection is worth: %d\n", preview_score);
 }
 
-// Calculate the score based on the dice counts
+// Calculate the score based on the dice counts, and modify the value of score variable
 int calculate_score(int counts[]) {
     int score = 0;
 
