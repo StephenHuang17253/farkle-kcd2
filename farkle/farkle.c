@@ -20,10 +20,10 @@ void roll_all_dice(int dice[], int num_dice) {
 void display_dice(int dice[], int num_dice, int keep[]) {
     for (int i = 0; i < num_dice; i++) {
         if (keep[i] == 1) {
-            printf(" - [%d] (selected)\n", dice[i]);
+            printf("Die %d : value = [%d] (selected)\n", i+1, dice[i]);
         }
         else {
-            printf(" - [%d]\n", dice[i]);
+            printf("Die %d : value = [%d]\n", i+1, dice[i]);
         }
 
     }
@@ -51,6 +51,48 @@ int check_farkle(int dice[], int num_dice) {
     return roll_score;
 
 }
+
+/*
+    Validate that the selected dice are valid.
+    e.g. the player might have selected a 1 and a 3.
+    in this case, the 1 is a scoring die, but the 3 is not.
+*/
+int is_valid_selection(int dice[], int num_dice, int keep[], int counts[]) {
+    int valid = 1;  // Assume valid unless we find an invalid case
+    int rolled_full_straight = 0;
+    int rolled_partial_straight = 0;
+
+    // The player cannot select a 2, 3, 4, or 6 unless there are 3 or more of them.
+    if ((counts[1] > 0 && counts[1] < 3) || (counts[2] > 0 && counts[2] < 3) ||
+        (counts[3] > 0 && counts[3] < 3) || (counts[5] > 0 && counts[5] < 3)) {
+        valid = 0;
+    }
+
+
+    for (int i = 0; i < 6; i++) {
+        if (counts[i] == 1) {
+            rolled_partial_straight += 1;
+            rolled_full_straight += 1;
+        }
+    }
+
+    // [1,2,3,4,5,6]
+    if (rolled_full_straight == 6) {
+        valid = 1;
+    }
+    // [1,2,3,4,5]
+    else if (rolled_partial_straight == 5 && counts[0] == 1) {
+        valid = 1;
+    }
+    // [2,3,4,5,6]
+    else if (rolled_partial_straight == 5 && counts[0] == 0) {
+        valid = 1;
+    }
+
+    // Return the validation result
+    return valid;
+}
+
 
 // Check value of current selection, but doesn't change total score.
 void preview_score(int counts[], int total_score, int turn_score) {
@@ -175,18 +217,36 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
 
     while (1) {
 
-        printf("\nYou can unselect a die by entering its value again.\nSelect a die by value (1-6) or enter 0 to finish selection: ");
-        scanf_s("%d", &selected);
+        printf("\nYou can unselect a die by selecting it again.\nSelect a die by its dice number from 1-6 (not value) or enter 0 to finish selection: ");
 
-        if (selected == 0) break;  // Stop selecting
+        if (scanf_s("%d", &selected) != 1) {
+
+            while (getchar() != '\n'); 
+            printf(" * Invalid input! Please enter a number between 0 and 6.\n");
+            continue;  
+        }
+
+        if (selected == 0) {
+            if (!is_valid_selection(dice, num_dice, keep, counts)) {
+                printf(" * Invalid selection! Some of your selected dice do not form a valid scoring combination.\n");
+                continue;
+            }
+            break;
+        }
         int found = 0;
         // Check if the selected value is valid
-        for (int i = 0; i < num_dice; i++) {
-            if (dice[i] == selected && !keep[i]) {
-                keep[i] = 1;  // Mark the die to keep
-                found += 1;
-                num_selected += 1;
-                break;
+        if (selected >= 1 && selected <= 6) {
+            if (dice[selected - 1] && !keep[selected - 1]) {
+                // If the die is not kept, mark it as kept
+                keep[selected - 1] = 1;
+                num_selected++;
+                found = 1;
+            }
+            else if (dice[selected - 1] && keep[selected - 1]) {
+                // If the die is already kept, unselect it
+                keep[selected - 1] = 0;
+                num_selected--;
+                found = 1;
             }
         }
 
@@ -240,7 +300,7 @@ int main() {
 
         if (possile_points == 0) {
             display_dice(dice, num_dice, keep);
-            printf("Farkle! You didn't roll any scoring combinations.)");
+            printf("Farkle! You didn't roll any scoring combinations.");
         }
 
 
@@ -276,6 +336,9 @@ int main() {
                     printf("\nYou chose to continue with this turn.\n");
                     reset_kept_dice(keep); 
                     num_dice = NUM_DICE - selected_this_turn;
+                    if (num_dice == 0) {
+                        num_dice = NUM_DICE;
+                    }
 
                 }
             }
