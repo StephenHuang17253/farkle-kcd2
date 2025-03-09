@@ -55,6 +55,8 @@ int check_farkle(int dice[], int num_dice) {
 // Check value of current selection, but doesn't change total score.
 void preview_score(int counts[], int total_score, int turn_score) {
     int preview_score = 0;
+    int rolled_full_straight = 0;
+    int rolled_partial_straight = 0;
 
     if (counts[0] < 3) {
         preview_score += counts[0] * 100; // 1's score 100 each
@@ -65,28 +67,40 @@ void preview_score(int counts[], int total_score, int turn_score) {
         preview_score += counts[4] * 50;  // 5's score 50 each
     }
 
-
     for (int i = 0; i < 6; i++) {
 
         int three_of_a_kind = (i == 0) ? 1000 : (i + 1) * 100;
 
-        printf("%d", counts[i]);
-
         if (counts[i] == 3) {
-            preview_score += three_of_a_kind;
+            preview_score += three_of_a_kind; // e.g. 2 2 2 = 400
         }
         else if (counts[i] == 4) {
-            preview_score += three_of_a_kind * 2;
+            preview_score += three_of_a_kind * 2; // e.g 2 2 2 2 = 800
         }
         else if (counts[i] == 5) {
-            preview_score += three_of_a_kind * 4;
+            preview_score += three_of_a_kind * 4; // e.g. 2 2 2 2 2 = 1600
         }
         else if (counts[i] == 6) {
-            preview_score += three_of_a_kind * 8;
+            preview_score += three_of_a_kind * 8; // e.g. 2 2 2 2 2 2 = 3200
         }
 
-        
-        
+        if (counts[i] == 1) {
+            rolled_partial_straight += 1;
+            rolled_full_straight += 1;
+        }
+    }
+
+    // [1,2,3,4,5,6]
+    if (rolled_full_straight == 6) {
+        preview_score = 1500;
+    }
+    // [1,2,3,4,5]
+    else if (rolled_partial_straight == 5 && counts[0] == 1) {
+        preview_score = 500;
+    }
+    // [2,3,4,5,6]
+    else if (rolled_partial_straight == 5 && counts[0] == 0) {
+        preview_score = 750;
     }
 
     printf("\n-----------\n");
@@ -98,10 +112,53 @@ void preview_score(int counts[], int total_score, int turn_score) {
 // Calculate the score based on the dice counts, and modify the value of score variable
 int calculate_score(int counts[]) {
     int score = 0;
+    int rolled_full_straight = 0;
+    int rolled_partial_straight = 0;
 
-    // Score for 1's and 5's
-    score += counts[0] * 100; // 1's score 100 each
-    score += counts[4] * 50;  // 5's score 50 each
+    if (counts[0] < 3) {
+        score += counts[0] * 100; // 1's score 100 each
+
+    }
+
+    if (counts[4] < 3) {
+        score += counts[4] * 50;  // 5's score 50 each
+    }
+
+    for (int i = 0; i < 6; i++) {
+
+        int three_of_a_kind = (i == 0) ? 1000 : (i + 1) * 100;
+
+        if (counts[i] == 3) {
+            score += three_of_a_kind; // e.g. 2 2 2 = 400
+        }
+        else if (counts[i] == 4) {
+            score += three_of_a_kind * 2; // e.g 2 2 2 2 = 800
+        }
+        else if (counts[i] == 5) {
+            score += three_of_a_kind * 4; // e.g. 2 2 2 2 2 = 1600
+        }
+        else if (counts[i] == 6) {
+            score += three_of_a_kind * 8; // e.g. 2 2 2 2 2 2 = 3200
+        }
+
+        if (counts[i] == 1) {
+            rolled_partial_straight += 1;
+            rolled_full_straight += 1;
+        }
+    }
+
+    // [1,2,3,4,5,6]
+    if (rolled_full_straight == 6) {
+        score = 1500;
+    }
+    // [1,2,3,4,5]
+    else if (rolled_partial_straight == 5 && counts[0] == 1) {
+        score = 500;
+    }
+    // [2,3,4,5,6]
+    else if (rolled_partial_straight == 5 && counts[0] == 0) {
+        score = 750;
+    }
 
     return score;
 }
@@ -145,9 +202,7 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
             }
         }
 
-
         preview_score(counts, total_score, turn_score);
-
 
         if (!found) {
             printf("Invalid selection. Please enter a valid die value from the roll.\n");
@@ -182,10 +237,10 @@ int main() {
         roll_all_dice(dice, num_dice);
 
         possile_points = check_farkle(dice, num_dice);
-        //printf("roll score: %d\n", farkle); // debug
+
         if (possile_points == 0) {
-            printf("Farkle! (No scoring combinations in roll, unlucky!)");
-            return; // Exit loop because farkle/bust
+            display_dice(dice, num_dice, keep);
+            printf("Farkle! You didn't roll any scoring combinations.)");
         }
 
 
@@ -209,7 +264,7 @@ int main() {
 
                 if (choice == 'b') {
                     total_score += turn_score;
-                    printf("\n----------------------\nYou banked %d points.\nNew total score: %d\n----------------------\n", turn_score, total_score);
+                    printf("\n----------------------\nYou banked %d points this round.\nNew total score: %d\n----------------------\n", turn_score, total_score);
                     turn_score = 0;
                     num_dice = NUM_DICE;
                     selected_this_turn = 0;
@@ -235,7 +290,6 @@ int main() {
             break;
         }
 
-        //printf("Turn over. Total score: %d\n", total_score);
     }
 
     return 0;
