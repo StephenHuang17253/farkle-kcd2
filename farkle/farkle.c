@@ -48,6 +48,7 @@ int check_farkle(int dice[], int num_dice) {
     }
 
     roll_score = calculate_score(counts);
+    printf("potential points from roll: %d\n", roll_score); // debug, i will delete this later
     return roll_score;
 
 }
@@ -61,6 +62,15 @@ int is_valid_selection(int dice[], int num_dice, int keep[], int counts[]) {
     int valid = 1;  // Assume valid unless we find an invalid case
     int rolled_full_straight = 0;
     int rolled_partial_straight = 0;
+
+    for (int i = 0; i < 6; i++) {
+        printf("%d", counts[i]);
+    }
+
+    if (counts[0] == 0 && counts[1] == 0 && counts[2] == 0 &&
+        counts[3] == 0 && counts[4] == 0 && counts[5] == 0) {
+        valid = 0;
+    }
 
     // The player cannot select a 2, 3, 4, or 6 unless there are 3 or more of them.
     if ((counts[1] > 0 && counts[1] < 3) || (counts[2] > 0 && counts[2] < 3) ||
@@ -207,7 +217,7 @@ int calculate_score(int counts[]) {
 
 
 // Handles the player selecting dice for scoring
-int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], int total_score, int turn_score, int selected_this_turn) {
+int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], int total_score, int turn_score, int selected_this_turn, int possible_points) {
     int selected;
     int num_selected = selected_this_turn;
     
@@ -215,9 +225,13 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
 
     display_dice(dice, num_dice, keep);
 
+    if (possible_points == 0) {
+        return 0;
+    }
+
     while (1) {
 
-        printf("\nYou can unselect a die by selecting it again.\nSelect a die by its dice number from 1-6 (not value) or enter 0 to finish selection: ");
+        printf("\nYou can unselect a die by selecting it again.\nSelect a die by its dice number from 1 - 6 (not value) or enter 0 to finish selection : ");
 
         if (scanf_s("%d", &selected) != 1) {
 
@@ -226,13 +240,6 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
             continue;  
         }
 
-        if (selected == 0) {
-            if (!is_valid_selection(dice, num_dice, keep, counts)) {
-                printf(" * Invalid selection! Some of your selected dice do not form a valid scoring combination.\n");
-                continue;
-            }
-            break;
-        }
         int found = 0;
         // Check if the selected value is valid
         if (selected >= 1 && selected <= 6) {
@@ -249,9 +256,6 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
                 found = 1;
             }
         }
-
-        // Print the selected dice
-        display_dice(dice, num_dice, keep);
             
         for (int i = 0; i < 6; i++) {
             counts[i] = 0; // Reset counts
@@ -261,6 +265,16 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
                 counts[dice[i] - 1]++;
             }
         }
+
+        if (selected == 0) {
+            if (!is_valid_selection(dice, num_dice, keep, counts)) {
+                printf("\nInvalid selection! Some of your selected dice do not form a valid scoring combination, or you haven't selected any.\n");
+                continue;
+            }
+            break;
+        }
+
+        display_dice(dice, num_dice, keep);
 
         preview_score(counts, total_score, turn_score);
 
@@ -286,7 +300,7 @@ int main() {
     int num_dice = NUM_DICE;
     int score_this_turn;
     int selected_this_turn = 0; // num of dice selected this turn, used to update num_dice
-    int possile_points = 0;
+    int possible_points = 0;
 
     printf("Let's play Farkle! (based on the dice minigame from Kingdom Come Deliverance 2)\n");
 
@@ -295,16 +309,16 @@ int main() {
     while (total_score < 10000) {
 
         roll_all_dice(dice, num_dice);
+        possible_points = 0;
+        possible_points = check_farkle(dice, num_dice);
 
-        possile_points = check_farkle(dice, num_dice);
-
-        if (possile_points == 0) {
+        if (possible_points > 0) {
+            selected_this_turn = player_choice_handler(dice, num_dice, keep, counts, total_score, turn_score, selected_this_turn, possible_points);
+        }
+        else {
             display_dice(dice, num_dice, keep);
-            printf("Farkle! You didn't roll any scoring combinations.");
         }
 
-
-        selected_this_turn = player_choice_handler(dice, num_dice, keep, counts, total_score, turn_score, selected_this_turn);
 
         score_this_turn = calculate_score(counts); 
   
@@ -312,9 +326,12 @@ int main() {
             turn_score += score_this_turn;
 
             // If no dice could be scored with, it's a farkle (aka BUST! in KCD2)
-            if (num_dice == 0) {
-                printf("Farkle! (You lose the points for this round).\n");
+            if (possible_points == 0) {
+                display_dice(dice, num_dice, keep);
+                printf("\nFarkle! You didn't roll any scoring combinations, and will not gain any points from this round.\n");
+                printf("\nStarting new round...\n");
                 turn_score = 0;
+                num_dice = NUM_DICE;
             }
             else {
                 // Ask the player if they want to continue round or bank the points
