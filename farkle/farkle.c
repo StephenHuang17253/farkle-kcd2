@@ -48,7 +48,7 @@ int check_farkle(int dice[], int num_dice) {
     }
 
     roll_score = calculate_score(counts);
-    printf("potential points from roll: %d\n", roll_score); // debug, i will delete this later
+    printf("debug: %d potential points from roll\n", roll_score); // debug, i will delete this later
     return roll_score;
 
 }
@@ -63,9 +63,9 @@ int is_valid_selection(int dice[], int num_dice, int keep[], int counts[]) {
     int rolled_full_straight = 0;
     int rolled_partial_straight = 0;
 
-    for (int i = 0; i < 6; i++) {
-        printf("%d", counts[i]);
-    }
+    //for (int i = 0; i < 6; i++) {
+    //    printf("%d", counts[i]);
+    //}
 
     if (counts[0] == 0 && counts[1] == 0 && counts[2] == 0 &&
         counts[3] == 0 && counts[4] == 0 && counts[5] == 0) {
@@ -316,7 +316,8 @@ int main() {
             selected_this_turn = player_choice_handler(dice, num_dice, keep, counts, total_score, turn_score, selected_this_turn, possible_points);
         }
         else {
-            display_dice(dice, num_dice, keep);
+            selected_this_turn = 0;
+            //display_dice(dice, num_dice, keep);
         }
 
 
@@ -350,11 +351,13 @@ int main() {
 
                 }
                 else {
-                    printf("\nYou chose to continue with this turn.\n");
                     reset_kept_dice(keep); 
+                    printf("debug: num selected dice = %d\n", selected_this_turn);
                     num_dice = NUM_DICE - selected_this_turn;
+                    printf("\nYou chose to continue this round with the %d dice remaining.\n", num_dice);
                     if (num_dice == 0) {
                         num_dice = NUM_DICE;
+                        printf("Hot streak! You can roll all 6 dice again.\n");
                     }
 
                 }
