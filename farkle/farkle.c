@@ -105,7 +105,7 @@ int is_valid_selection(int dice[], int num_dice, int keep[], int counts[]) {
 
 
 // Check value of current selection, but doesn't change total score.
-void preview_score(int counts[], int total_score, int turn_score) {
+void preview_score(int counts[], int total_score, int turn_score, int computer_score) {
     int preview_score = 0;
     int rolled_full_straight = 0;
     int rolled_partial_straight = 0;
@@ -157,6 +157,7 @@ void preview_score(int counts[], int total_score, int turn_score) {
 
     printf("\n-----------\n");
     printf("Game Score: %d\n", total_score);
+    printf("Computer Score: %d\n", computer_score);
     printf("Turn Score: %d\n", turn_score);
     printf("Your selection is worth: %d\n", preview_score);
 }
@@ -217,11 +218,14 @@ int calculate_score(int counts[]) {
 
 
 // Handles the player selecting dice for scoring
-int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], int total_score, int turn_score, int selected_this_turn, int possible_points) {
+int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], int total_score, int turn_score, int selected_this_turn, int possible_points, int computer_score) {
     int selected;
     int num_selected = selected_this_turn;
     
-    printf("Score: %d\nRound score: %d\nSelect dice to keep (for scoring):\n", total_score, turn_score);
+    printf("Score: %d\n", total_score);
+    printf("Computer Score: %d\n", computer_score);
+    printf("Round score: %d\n", turn_score);
+    printf("Select dice to keep (for scoring):\n");
 
     display_dice(dice, num_dice, keep);
 
@@ -274,9 +278,11 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
             break;
         }
 
+        printf("\nYou selected die %d which landed on %d\n", selected, dice[selected-1]);
+
         display_dice(dice, num_dice, keep);
 
-        preview_score(counts, total_score, turn_score);
+        preview_score(counts, total_score, turn_score, computer_score);
 
         if (!found) {
             printf("Invalid selection. Please enter a valid die value from the roll.\n");
@@ -288,6 +294,114 @@ int player_choice_handler(int dice[], int num_dice, int keep[], int counts[], in
 
 }
 
+int computer_turn(int* computer_score, int selected_this_turn) {
+    int dice[NUM_DICE];
+    int keep[NUM_DICE] = { 0 };
+    int counts[6];
+    int turn_score = 0;
+    int num_kept = selected_this_turn;
+    int num_dice = NUM_DICE;
+
+    printf("\n--- Computer's turn ---\n");
+
+    while (1) {
+        roll_all_dice(dice, num_dice);
+        printf("\nComputer rolled:\n");
+        display_dice(dice, num_dice, keep);
+
+        int possible_points = check_farkle(dice, num_dice);
+        if (possible_points == 0) {
+            printf("Computer farkled! No points this turn.\n");
+            return 0;
+        }
+
+        // Count rolled dice values
+        for (int i = 0; i < 6; i++) counts[i] = 0;
+        for (int i = 0; i < num_dice; i++) counts[dice[i] - 1]++;
+
+        // Automatically select scoring dice (1s, 5s, and triplets)
+        for (int i = 0; i < num_dice; i++) {
+            if (dice[i] == 1 || dice[i] == 5 || counts[dice[i] - 1] >= 3) {
+                keep[i] = 1;
+                num_kept++;
+            }
+        }
+
+        // Count only kept dice for scoring
+        for (int i = 0; i < 6; i++) counts[i] = 0;
+        for (int i = 0; i < num_dice; i++) {
+            if (keep[i]) counts[dice[i] - 1]++;
+        }
+
+        int score_this_turn = calculate_score(counts);
+        turn_score += score_this_turn;
+
+        printf("\nComputer selecting dice...\n");
+        display_dice(dice, num_dice, keep);
+        printf("\nComputer scored %d points (Round total: %d)\n", score_this_turn, turn_score);
+        printf("Computer Total Game Score: %d\n", *computer_score);
+
+        // Decide whether to continue or bank points, I need to try make this more human
+        if ((turn_score >= 500 && num_dice - num_kept == 1) ||
+            (turn_score >= 2000) ||
+            (num_dice - num_kept <= 2)) {
+
+            if (turn_score >= 2000) {
+                // 90% chance to bank after accumuluting 2000 or more points in a round
+                int random_chance = rand() % 100;
+                if (random_chance < 90) {
+                    printf("Computer banks %d points, ending turn.\n", turn_score);
+                    *computer_score += turn_score;
+                    return turn_score;
+                }
+            }
+            else if (turn_score >= 1000) {
+                // 75% chance to bank after accumuluting 1000 or more points in a round
+                int random_chance = rand() % 100;
+                if (random_chance < 75) {
+                    printf("Computer banks %d points, ending turn.\n", turn_score);
+                    *computer_score += turn_score;
+                    return turn_score;
+                }
+            }
+            else if (turn_score >= 500) {
+                // 50% chance to bank after accumuluting 1000 or more points in a round
+                int random_chance = rand() % 100;
+                if (random_chance < 50) {
+                    printf("Computer banks %d points, ending turn.\n", turn_score);
+                    *computer_score += turn_score;
+                    return turn_score;
+                }
+            }
+            else {
+                printf("Computer banks %d points, ending turn.\n", turn_score);
+                *computer_score += turn_score;
+                return turn_score;
+            }
+        }
+
+        // Prepare for next roll: only reroll unkept dice
+        num_dice = NUM_DICE - num_kept;
+        if (num_dice == 0) {
+            printf("Hot dice! Computer gets to roll all 6 again.\n");
+            num_dice = NUM_DICE; // If all dice are kept, reroll all 6
+            num_kept = 0;
+        }
+        else {
+            printf("Computer decided to continue the round with %d dice remaining...\n", num_dice);
+        }
+
+        // Reset keep status for next roll
+        for (int i = 0; i < NUM_DICE; i++) keep[i] = 0;
+
+    }
+    return num_kept;
+}
+
+
+
+
+
 // Main game loop
 int main() {
     srand(time(NULL));
@@ -297,6 +411,8 @@ int main() {
     int counts[6];              // Count occurrences of each die value (1-6), used to help with calculating score
     int total_score = 0;
     int turn_score = 0;
+    int computer_score = 0;
+    int is_player_turn = 1;
     int num_dice = NUM_DICE;
     int score_this_turn;
     int selected_this_turn = 0; // num of dice selected this turn, used to update num_dice
@@ -306,71 +422,82 @@ int main() {
 
     num_dice = NUM_DICE;
 
-    while (total_score < 10000) {
-
-        roll_all_dice(dice, num_dice);
-        possible_points = 0;
-        possible_points = check_farkle(dice, num_dice);
-
-        if (possible_points > 0) {
-            selected_this_turn = player_choice_handler(dice, num_dice, keep, counts, total_score, turn_score, selected_this_turn, possible_points);
-        }
-        else {
-            selected_this_turn = 0;
-            //display_dice(dice, num_dice, keep);
-        }
+    while (total_score < 10000 && computer_score < 10000) {
 
 
-        score_this_turn = calculate_score(counts); 
-  
-        if (score_this_turn > 0) {
-            turn_score += score_this_turn;
+        if (is_player_turn) {
 
-            // If no dice could be scored with, it's a farkle (aka BUST! in KCD2)
-            if (possible_points == 0) {
-                display_dice(dice, num_dice, keep);
-                printf("\nFarkle! You didn't roll any scoring combinations, and will not gain any points from this round.\n");
-                printf("\nStarting new round...\n");
-                turn_score = 0;
-                num_dice = NUM_DICE;
+            printf("\n--- Your Turn ---\n");
+            roll_all_dice(dice, num_dice);
+            possible_points = 0;
+            possible_points = check_farkle(dice, num_dice);
+
+            if (possible_points > 0) {
+                selected_this_turn = player_choice_handler(dice, num_dice, keep, counts, total_score, turn_score, selected_this_turn, possible_points, computer_score);
             }
             else {
-                // Ask the player if they want to continue round or bank the points
-                char choice;
-                printf("Do you want to continue the round or bank your points? (c to continue, b to bank): ");
-                scanf_s(" %c", &choice);
+                selected_this_turn = 0;
+                //display_dice(dice, num_dice, keep);
+            }
 
-                if (choice == 'b') {
-                    total_score += turn_score;
-                    printf("\n----------------------\nYou banked %d points this round.\nNew total score: %d\n----------------------\n", turn_score, total_score);
+
+            score_this_turn = calculate_score(counts);
+
+            if (score_this_turn > 0) {
+                turn_score += score_this_turn;
+
+                // If no dice could be scored with, it's a farkle (aka BUST! in KCD2)
+                if (possible_points == 0) {
+                    display_dice(dice, num_dice, keep);
+                    printf("\nFarkle! You didn't roll any scoring combinations, and will not gain any points from this round.\n");
+                    printf("\nStarting new round...\n");
                     turn_score = 0;
                     num_dice = NUM_DICE;
-                    selected_this_turn = 0;
-                    reset_kept_dice(keep);
-                    printf("Starting next round\n");
-
                 }
                 else {
-                    reset_kept_dice(keep); 
-                    printf("debug: num selected dice = %d\n", selected_this_turn);
-                    num_dice = NUM_DICE - selected_this_turn;
-                    printf("\nYou chose to continue this round with the %d dice remaining.\n", num_dice);
-                    if (num_dice == 0) {
-                        num_dice = NUM_DICE;
-                        printf("Hot streak! You can roll all 6 dice again.\n");
-                    }
+                    // Ask the player if they want to continue round or bank the points
+                    char choice;
+                    printf("Do you want to continue the round or bank your points? (c to continue, b to bank): ");
+                    scanf_s(" %c", &choice);
 
+                    if (choice == 'b') {
+                        total_score += turn_score;
+                        printf("\n----------------------\nYou banked %d points this round.\nNew total score: %d\n----------------------\n", turn_score, total_score);
+                        turn_score = 0;
+                        num_dice = NUM_DICE;
+                        selected_this_turn = 0;
+                        reset_kept_dice(keep);
+                        printf("Starting next round\n");
+                    }
+                    else {
+                        reset_kept_dice(keep);
+                        printf("debug: num selected dice = %d\n", selected_this_turn);
+                        num_dice = NUM_DICE - selected_this_turn;
+                        printf("\nYou chose to continue this round with the %d dice remaining.\n", num_dice);
+                        if (num_dice == 0) {
+                            num_dice = NUM_DICE;
+                            printf("Hot streak! You can roll all 6 dice again.\n");
+                        }
+                        continue;
+                    }
                 }
             }
         }
+
         else {
-            printf("You farkled! No points this turn.\n");
+            selected_this_turn = computer_turn(&computer_score, selected_this_turn);
+            printf("Computer total score: %d\n", computer_score);
         }
+
+        is_player_turn = !is_player_turn; // Alternate turns
 
         // End the game if the player reaches the target score
         if (total_score >= 10000) {
             printf("\nCongratulations! You won!\n");
             break;
+        }
+        else if (computer_score >= 10000) {
+            printf("The computer player won. Better luck next time!");
         }
 
     }
